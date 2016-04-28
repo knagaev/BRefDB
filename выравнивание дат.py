@@ -86,6 +86,6 @@ df_filled_full_lines.loc[1573, ('line_value', 'line_increment')].to_csv(r'c:\wor
 
 #full_index = pd.MultiIndex.from_product([df_lines.groupby(['match_ref', 'snapshot_time']).groups.keys(), all_houses, all_rtv_refs], names=['match_ref', 'snapshot_time', 'house_ref', 'RTV_ref'])
 
-РИСУЕМ ГРАФИКИ pyplot
+РИСУЕМ ГРАФИКИ %pyplot
 сколько занимают объекты в памяти
 
