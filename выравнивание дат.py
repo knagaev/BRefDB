@@ -89,3 +89,4 @@ df_filled_full_lines.loc[1573, ('line_value', 'line_increment')].to_csv(r'c:\wor
 РИСУЕМ ГРАФИКИ %pyplot
 сколько занимают объекты в памяти
 
+третья попытка
