@@ -63,7 +63,7 @@ all_match_times_house_refs = pd.merge(df_match_times, all_house_refs, on='key').
 #df_full_lines = pd.merge(all_match_times_house_refs.reset_index(), df_lines.reset_index(), how='left', on=['match_ref', 'house_ref', 'RTV_ref', 'snapshot_time'], suffixes=['_l', '_r'])
 df_full_lines = pd.merge(all_match_times_house_refs, df_lines, how='left', on=['match_ref', 'house_ref', 'RTV_ref', 'snapshot_time'], suffixes=['_l', '_r'])
 df_full_lines.index.name = 'ndx'
-df_full_lines[df_full_times.match_ref == 1573].to_csv(r'c:\work\others\Oleg\test.csv')
+#df_full_lines[df_full_lines.match_ref == 1573].to_csv(r'c:\work\others\Oleg\test.csv')
 %xdel all_match_times_house_refs
 
 df_full_lines.set_index(['match_ref', 'house_ref', 'RTV_ref', 'snapshot_time'], inplace=True)
@@ -86,6 +86,6 @@ df_filled_full_lines.loc[1573, ('line_value', 'line_increment')].to_csv(r'c:\wor
 
 #full_index = pd.MultiIndex.from_product([df_lines.groupby(['match_ref', 'snapshot_time']).groups.keys(), all_houses, all_rtv_refs], names=['match_ref', 'snapshot_time', 'house_ref', 'RTV_ref'])
 
-РИСУЕМ ГРАФИКИ
+РИСУЕМ ГРАФИКИ pyplot
 сколько занимают объекты в памяти
 
