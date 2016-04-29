@@ -15,8 +15,8 @@ import matplotlib
 matplotlib.style.use('ggplot')
 from matplotlib import pyplot as plt
 
-fig = plt.figure()
-axis = fig.add_subplot(111)
+#fig = plt.figure()
+#axis = fig.add_subplot(111)
 
 conn = pymssql.connect('.\\SQLEXPRESS', 'BB_miner', 'BB_3817_miner', "BRefDB")
 
@@ -111,4 +111,3 @@ ser_std = df_filled_full_lines['line_value'].groupby(level=[0, 1, 2]).std()
 variest_line_values = 1/df_filled_full_lines.loc[ser_std.idxmax()]['line_value']
 variest_line_values.plot()
 plt.show()
-
