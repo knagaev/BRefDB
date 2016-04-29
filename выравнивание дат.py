@@ -111,3 +111,5 @@ ser_std = df_filled_full_lines['line_value'].groupby(level=[0, 1, 2]).std()
 variest_line_values = 1/df_filled_full_lines.loc[ser_std.idxmax()]['line_value']
 variest_line_values.plot()
 plt.show()
+
+почему loc удаляет верхние уровни из MultiIndex?
