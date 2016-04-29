@@ -113,4 +113,3 @@ variest_line_values.plot()
 plt.show()
 
 почему loc удаляет верхние уровни из MultiIndex?
-test
