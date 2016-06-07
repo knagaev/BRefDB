@@ -1,6 +1,11 @@
-import pymssql
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use("qt4agg")
+#matplotlib.use('ggplot')
+%cd ..\..\others\Oleg
+
+from matplotlib import pyplot as plt
 #from sklearn.ensemble import GradientBoostingClassifier
 #from sklearn import grid_search
 #from sklearn.cross_validation import KFold, cross_val_score
@@ -10,21 +15,50 @@ import numpy as np
 #import datetime
 #from datetime import timedelta
 #from sklearn.linear_model import LogisticRegression
-import matplotlib
-#matplotlib.use("qt4agg")
-matplotlib.style.use('ggplot')
-from matplotlib import pyplot as plt
 
 #fig = plt.figure()
 #axis = fig.add_subplot(111)
 
-conn = pymssql.connect('.\\SQLEXPRESS', 'BB_miner', 'BB_3817_miner', "BRefDB")
+def maybe_load():
+  data_scheme = {'df_lines': 
+                    ['line_ID', 
+                      '''select line_ID, house_ref, match_ref, TS_ref, line_value, line_increment, snapshot_time, is_it_starting, RTV_ref, time_increment 
+                          from Lines where RTV_ref in (1, 2, 3)'''],
+                  'df_match_results': 
+                    ['MR_ID', 
+                      '''select MR_ID, RTV_ref, match_ref, actual_value, text_result
+                          from Match_results where RTV_ref in (1, 2, 3)'''],                
+                }
 
-df_lines = pd.read_sql('''select line_ID, house_ref, match_ref, TS_ref, line_value, line_increment, snapshot_time, is_it_starting, RTV_ref, time_increment 
-                          from Lines where RTV_ref in (1, 2, 3)''', conn, index_col='line_ID')
+  loaded_data = {}
 
-df_match_results = pd.read_sql('''select MR_ID, RTV_ref, match_ref, actual_value, text_result
-                          from Match_results where RTV_ref in (1, 2, 3)''', conn, index_col='MR_ID')
+  from pandas.io.pytables import HDFStore
+
+  with HDFStore('BRefDB.h5') as store:    
+    for df_name in data_scheme: 
+      if df_name in store:
+        loaded_data[df_name] = store[df_name]
+      else:
+        import pymssql
+        with pymssql.connect('.\\SQLEXPRESS', 'BB_miner', 'BB_3817_miner', "BRefDB") as conn:
+          loaded_data[df_name] = pd.read_sql(data_scheme[df_name][1], conn, index_col=data_scheme[df_name][0])
+  
+  return loaded_data 
+
+
+loaded_data = maybe_load()
+
+def save_to_store(loaded_data):
+  from pandas.io.pytables import HDFStore
+
+  with HDFStore('BRefDB.h5') as store:    
+    for df_name in loaded_data:
+      store[df_name] = loaded_data[df_name]
+      print df_name + ' saved'
+
+#save_to_store(loaded_data)
+
+
 
 # корректировка дат для записей is_it_starting == 1
 df_s_lines = df_lines[df_lines['is_it_starting'] == 1]
@@ -113,3 +147,4 @@ variest_line_values.plot()
 plt.show()
 
 почему loc удаляет верхние уровни из MultiIndex?
+
