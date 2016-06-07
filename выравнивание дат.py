@@ -58,7 +58,8 @@ def save_to_store(loaded_data):
 
 #save_to_store(loaded_data)
 
-
+df_lines = loaded_data['df_lines']
+df_match_results = loaded_data['df_match_results']
 
 # корректировка дат для записей is_it_starting == 1
 df_s_lines = df_lines[df_lines['is_it_starting'] == 1]
@@ -113,6 +114,12 @@ df_full_lines.sort_index(axis=1, inplace=True)
 
 #df_filled_full_lines = df_full_lines.fillna(method='ffill').fillna(method='bfill')
 df_filled_full_lines = df_full_lines.groupby(level=[0, 1, 2]).fillna(method='ffill').fillna(method='bfill')
+
+with HDFStore('BRefDB.h5') as store:    
+  store['df_full_lines'] = df_full_lines
+  store['df_filled_full_lines'] = df_filled_full_lines
+
+
 
 df_full_lines.loc[(1573, slice(None), slice(None), pd.Timestamp('2016-03-29 08:22:00')), :]
 
