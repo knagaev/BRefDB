@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("qt4agg")
 #matplotlib.use('ggplot')
-%cd ..\..\others\Oleg
+%cd ..\others\Oleg
 
 from matplotlib import pyplot as plt
 #from sklearn.ensemble import GradientBoostingClassifier
@@ -119,7 +119,10 @@ with HDFStore('BRefDB.h5') as store:
   store['df_full_lines'] = df_full_lines
   store['df_filled_full_lines'] = df_filled_full_lines
 
-
+from pandas.io.pytables import HDFStore
+with HDFStore('BRefDB.h5') as store:    
+  df_full_lines = store['df_full_lines']
+  df_filled_full_lines = store['df_filled_full_lines']
 
 df_full_lines.loc[(1573, slice(None), slice(None), pd.Timestamp('2016-03-29 08:22:00')), :]
 
