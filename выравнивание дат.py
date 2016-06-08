@@ -158,3 +158,4 @@ plt.show()
 
 почему loc удаляет верхние уровни из MultiIndex?
 
+test new

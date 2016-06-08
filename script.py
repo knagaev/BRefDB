@@ -225,38 +225,43 @@ ORDER BY all_dims.TS_ref, all_dims.house_ref, all_dims.RTV_ref
 ;
 
 
-sql_bets_format = '''SELECT all_dims.TS_ref, all_dims.house_ref, all_dims.RTV_ref, 1/l.line_value prob_value--, 1/l.line_increment, l.snapshot_time, l.time_increment 
-FROM (SELECT * FROM Lines WHERE RTV_ref in (1, 2, 3) AND match_ref = {0} AND is_it_starting = 0) l 
-  RIGHT OUTER JOIN
-(
-SELECT * from
-  (SELECT DISTINCT TS_ref from Lines WHERE match_ref = {0} AND RTV_ref in (1, 2, 3) AND is_it_starting = 0) all_ts,
-  (SELECT DISTINCT house_ref from Lines WHERE match_ref = {0} AND RTV_ref in (1, 2, 3)) all_houses,
-  (SELECT 1 RTV_ref UNION ALL SELECT 2 UNION ALL SELECT 3) all_rtvs
-  ) all_dims
-  ON all_dims.TS_ref = l.TS_ref and all_dims.house_ref = l.house_ref and all_dims.RTV_ref = l.RTV_ref
-ORDER BY all_dims.TS_ref, all_dims.house_ref, all_dims.RTV_ref'''
+def bet_time_series(match_id=2698):
 
-sql_bets = sql_bets_format.format(2698)
+  fig = plt.figure()
+  axis = fig.add_subplot(111)
+  
+  sql_bets_format = '''SELECT all_dims.TS_ref, all_dims.house_ref, all_dims.RTV_ref, 1/l.line_value prob_value--, 1/l.line_increment, l.snapshot_time, l.time_increment 
+                      FROM (SELECT * FROM Lines WHERE RTV_ref in (1, 2, 3) AND match_ref = {0} AND is_it_starting = 0) l 
+                        RIGHT OUTER JOIN
+                      (
+                      SELECT * from
+                        (SELECT DISTINCT TS_ref from Lines WHERE match_ref = {0} AND RTV_ref in (1, 2, 3) AND is_it_starting = 0) all_ts,
+                        (SELECT DISTINCT house_ref from Lines WHERE match_ref = {0} AND RTV_ref in (1, 2, 3)) all_houses,
+                        (SELECT 1 RTV_ref UNION ALL SELECT 2 UNION ALL SELECT 3) all_rtvs
+                        ) all_dims
+                        ON all_dims.TS_ref = l.TS_ref and all_dims.house_ref = l.house_ref and all_dims.RTV_ref = l.RTV_ref
+                      ORDER BY all_dims.TS_ref, all_dims.house_ref, all_dims.RTV_ref'''
 
-df_bets = pd.read_sql(sql_bets, conn)
+  sql_bets = sql_bets_format.format(match_id)
 
-df_bets_by_houses = df_bets.pivot_table(index=['TS_ref'], columns=['house_ref', 'RTV_ref'], values=['prob_value'])
-df_filled_bets_by_houses = df_bets_by_houses.fillna(method='ffill')
+  df_bets = pd.read_sql(sql_bets, conn)
 
-fig = plt.figure()
-axis = fig.add_subplot(111)
+  #df_bets_by_houses = df_bets.pivot_table(index=['TS_ref'], columns=['house_ref', 'RTV_ref'], values=['prob_value'])
+  #df_filled_bets_by_houses = df_bets_by_houses.fillna(method='ffill')
+  #df_first_line = df_filled_bets_by_houses['prob_value', 1]
+  #%matplotlib
+  #df_first_line.plot()
 
-%matplotlib
-df_first_line = df_filled_bets_by_houses['prob_value', 1]
+  df_bets_by_bet = df_bets.pivot_table(index=['TS_ref'], columns=['RTV_ref', 'house_ref'], values=['prob_value'])
+  df_filled_bets_by_bet = df_bets_by_bet.fillna(method='ffill')
+  
+  %matplotlib
+  df_filled_bets_by_bet['prob_value', 1].plot()
 
-df_first_line.plot()
 
-
-
-sql_prob = '''SELECT l.RTV_ref prognosis, mr.RTV_ref result, 1/l.line_value prob_value, l.house_ref, l.match_ref--, m.match_name 
+sql_prob = '''SELECT l.snapshot_time, l.RTV_ref prognosis, mr.RTV_ref result, 1/l.line_value prob_value, l.house_ref, l.match_ref--, m.match_name 
                     FROM Lines l 
-                      INNER JOIN (SELECT match_ref, MAX(TS_ref) last_TS_ref from Lines WHERE is_it_starting = 0 GROUP BY match_ref) last_ts
+                      INNER JOIN (SELECT match_ref, MAX(TS_ref) last_TS_ref from Lines WHERE is_it_starting = 0 and RTV_ref < 4 GROUP BY match_ref) last_ts
                       ON l.match_ref = last_ts.match_ref and l.TS_ref = last_ts.last_TS_ref
                      INNER JOIN Match_results mr ON l.match_ref = mr.match_ref
                      INNER JOIN Matches m ON l.match_ref = m.match_ID
@@ -265,4 +270,11 @@ sql_prob = '''SELECT l.RTV_ref prognosis, mr.RTV_ref result, 1/l.line_value prob
 #df_prob = pd.read_sql(sql_prob, conn, index_col=['match_ref', 'house_ref'])
 df_prob = pd.read_sql(sql_prob, conn)
 
-df_prob_by_result = df_prob.pivot_table(index=['match_ref', 'house_ref'], columns=['prognosis'], values=['prob_value', 'result'])
+df_prob_by_result = df_prob.pivot_table(index=['match_ref'], columns=['prognosis', 'house_ref'], values=['prob_value', 'result'])
+
+
+Измерения: контора, матч, вариант, время
+Значение: вероятность
+
+По вариантам (фильтруем один вариант).
+Распределение матчей по близости к результату (по последнему временному отсчету)   

@@ -24,8 +24,15 @@ matplotlib.style.use('ggplot')
 
 conn = pymssql.connect('.\\SQLEXPRESS', 'BB_miner', 'BB_3817_miner', "BRefDB")
 
-df_lines = pd.read_sql('select * from Lines', conn, index_col='line_ID')
+df_lines = pd.read_sql('select line_ID, house_ref, match_ref, TS_ref, line_value, line_increment, snapshot_time, is_it_starting, RTV_ref, time_increment from Lines', conn, index_col='line_ID')
 
+# фильтруем первый вариант 
 df_first_win_lines = df_lines[df_lines['RTV_ref'] == 1]
 
-df_bets_by_bet = df_bets.pivot_table(index=['TS_ref'], columns=['RTV_ref', 'house_ref'], values=['prob_value'])
+# превращаем is_it_starting в отсчет за секунду
+df_starting_lines = df_first_win_lines[df_first_win_lines['is_it_starting'] == 1]
+df_not_starting_lines = df_first_win_lines[df_first_win_lines['is_it_starting'] == 0]
+
+merge(df_starting_lines, df_not_starting_lines, on=['match_ref', 'TS_ref'])
+
+df_bets_by_bet = df_first_win_lines.pivot_table(index=['TS_ref'], columns=['RTV_ref', 'house_ref'], values=['prob_value'])
